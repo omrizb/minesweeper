@@ -1,6 +1,11 @@
 'use strict'
 
 function onCellClick(elCell, i, j) {
+    if (gBoard.length === 0) {
+        buildBoard(gCurrLevel.size, { i, j })
+        startTime()
+    }
+
     var cell = gBoard[i][j]
     if (!gGame.isOn || cell.isMarked || cell.isShown) return
 
@@ -10,9 +15,10 @@ function onCellClick(elCell, i, j) {
 }
 
 function onCellMarked(elCell, i, j) {
-    var cell = gBoard[i][j]
+    if (!gGame.isOn || gBoard.length === 0) return false
 
-    if (!gGame.isOn || cell.isShown) return false
+    var cell = gBoard[i][j]
+    if (cell.isShown) return false
 
     var innerHTML = ''
     if (!cell.isMarked) {
@@ -39,6 +45,7 @@ function showCell(elCell, i, j) {
     var cell = gBoard[i][j]
     cell.isShown = true
     elCell.classList.add('shown-cell')
+    elCell.classList.remove('cell-border-2')
     elCell.style.color = COLORS[cell.minesAroundCount - 1]
 
     if (cell.isMine) elCell.innerHTML = MINE

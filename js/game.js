@@ -3,6 +3,11 @@
 const COLORS = ['blue', 'green', 'red', 'darkblue', 'brown', 'cyan', 'black', 'grey']
 const FLAG = '<img src="./img/flag.png" class="little-image">'
 const MINE = '<img src="./img/mine.png" class="little-image">'
+const LIVE = '💛'
+const SMILEY = '🙂'
+const MOUSE_DOWN_SMILEY = '😯'
+const WIN_SMILEY = '😎'
+const LOSE_SMILEY = '🤯'
 
 const gLevels = [
     { name: 'Beginner', size: 4, mines: 2 },
@@ -18,20 +23,27 @@ const gGame = {
     shownCount: 0,
     markedCount: 0,
     minesLeft: 0,
-    secsPassed: 0
+    livesLeft: 0,
+    startTime: 0
 }
+var gTimeInterval
 var gBoard
 
 function onInit(levelName) {
+    document.addEventListener('mousedown', handleSmileyDown )
+    document.addEventListener('mouseup', handleSmileyUp )
     setCurrLevel(levelName)
+    setSmiley('smiley')
     resetGame()
-    buildBoard(gCurrLevel.size)
-    renderBoard(gBoard)
+    resetLives()
+    resetTimer()
+    renderBoard()
     updateMinesLeft()
     gGame.isOn = true
 }
 
-function setCurrLevel(name) {
+function setCurrLevel(name = '') {
+    if (name === '') return
     var htmlStr = ''
     for (var i = 0; i < gLevels.length; i++) {
         const currLvl = gLevels[i]
@@ -39,14 +51,14 @@ function setCurrLevel(name) {
         if (currLvl.name === name) {
             gCurrLevel.size = currLvl.size
             gCurrLevel.mines = currLvl.mines
-            currLvlClass = ' currLevel'
+            currLvlClass = ' header-highlight'
         }
 
         htmlStr += `<span class="level${currLvlClass}" onclick="onInit('${currLvl.name}')">${currLvl.name}</span> | `
     }
-    
+
     htmlStr = htmlStr.slice(0, htmlStr.lastIndexOf(' |'))
-    
+
     const elLevels = document.querySelector('.levels')
     elLevels.innerHTML = htmlStr
 }
@@ -56,11 +68,12 @@ function resetGame() {
     gGame.shownCount = 0
     gGame.markedCount = 0
     gGame.minesLeft = 0
-    gGame.secsPassed = 0
+    gGame.livesLeft = 3
+    gGame.startTime = 0
+    gBoard = []
 }
 
-function buildBoard(size) {
-    gBoard = []
+function buildBoard(size, firstCell) {
     for (var i = 0; i < size; i++) {
         gBoard[i] = []
         for (var j = 0; j < size; j++) {
@@ -74,12 +87,10 @@ function buildBoard(size) {
         }
     }
 
-    var randCells = getRandomCells(gBoard, gCurrLevel.mines)
+    var randCells = getRandomCells(gBoard, gCurrLevel.mines, [firstCell])
     for (var randCell of randCells) {
         gBoard[randCell.i][randCell.j].isMine = true
     }
-    // gBoard[1][1].isMine = true
-    // gBoard[2][3].isMine = true
 
     setMinesNegsCount(gBoard)
 }
@@ -113,12 +124,12 @@ function countMinesAroundCell(board, rowIdx, colIdx) {
     return minesCount
 }
 
-function renderBoard(board) {
+function renderBoard() {
     var innerHtml = ''
-    for (var i = 0; i < board.length; i++) {
+    for (var i = 0; i < gCurrLevel.size; i++) {
         innerHtml += '<tr>'
-        for (var j = 0; j < board[0].length; j++) {
-            innerHtml += `<td class="cell" onclick="onCellClick(this, ${i}, ${j})" oncontextmenu="return onCellMarked(this, ${i}, ${j})" data-i="${i}" data-j="${j}"></td>`
+        for (var j = 0; j < gCurrLevel.size; j++) {
+            innerHtml += `<td class="cell cell-border-2" onclick="onCellClick(this, ${i}, ${j})" oncontextmenu="return onCellMarked(this, ${i}, ${j})" data-i="${i}" data-j="${j}"></td>`
         }
         innerHtml += '</tr>'
     }
@@ -127,14 +138,54 @@ function renderBoard(board) {
     elBoard.innerHTML = innerHtml
 }
 
+function resetLives() {
+    var livesStr = ''
+    for (var i = 0; i < gGame.livesLeft; i++) {
+        livesStr += LIVE + ' '
+    }
+    const elLives = document.querySelector('.lives')
+    elLives.innerHTML = livesStr
+}
+
+function startTime() {
+    gGame.startTime = Date.now()
+    gTimeInterval = setInterval(updateTime, 37)
+}
+
+function stopTime() {
+    clearInterval(gTimeInterval)
+}
+
+function updateTime() {
+    const timeDiff = Date.now() - gGame.startTime
+    const elTime = document.querySelector('.time')
+    elTime.textContent = getTimeStr(timeDiff)
+}
+
+function resetTimer() {
+    stopTime()
+    const elTime = document.querySelector('.time')
+    elTime.textContent = getTimeStr(0)
+}
+
+function setSmiley(smiley = undefined) {
+    var htmlSmiley = SMILEY
+    if (smiley === 'down') htmlSmiley = MOUSE_DOWN_SMILEY
+    else if (smiley === 'win') htmlSmiley = WIN_SMILEY
+    else if (smiley === 'lose') htmlSmiley = LOSE_SMILEY
+    const elSmiley = document.querySelector('.board-header-smiley')
+    elSmiley.textContent = htmlSmiley
+}
+
 function checkGameOver(elCell, i, j) {
     if (gBoard[i][j].isMine) {
         elCell.classList.add('red-background')
+        setSmiley('lose')
         finishGame()
         return true
     }
     else if (gGame.shownCount === Math.pow(gCurrLevel.size, 2) - gCurrLevel.mines) {
-        console.log('WIN!')
+        setSmiley('win')
         finishGame()
         return true
     }
@@ -143,6 +194,9 @@ function checkGameOver(elCell, i, j) {
 
 function finishGame() {
     gGame.isOn = false
+    stopTime()
+    document.removeEventListener('mousedown', handleSmileyDown )
+    document.removeEventListener('mouseup', handleSmileyUp )
     for (var i = 0; i < gBoard.length; i++) {
         for (var j = 0; j < gBoard[0].length; j++) {
             var cell = gBoard[i][j]
@@ -152,3 +206,10 @@ function finishGame() {
     }
 }
 
+function handleSmileyDown() {
+    setSmiley('down')
+}
+
+function handleSmileyUp() {
+    setSmiley()
+}

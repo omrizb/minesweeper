@@ -8,12 +8,25 @@
 </head>
 <body onload="onInit('Beginner')">
     <div class="container">
-        <h1>Minesweeper</h1>
-        <div header>
-            <h2>Level: <span class="levels"></span></h2>
-            <h2>Mines left: <span class="mines-left"></span></h2>
+        <h1><img src="./img/mine.png" class="header-image">Minesweeper</h1>
+        <div class="header">
+            <div>
+                <span class="left">Level: <span class="levels"></span></span>
+            </div>
         </div>
-        <div class="board-container">
+        <div class="board-container cell-border-1">
+            <div class="board-header">
+                <div>
+                    <div class="board-header-cell cell-border-2">
+                        <span class="mines-left header-highlight"></span>
+                    </div>
+                    <div class="lives"></div>
+                </div>        
+                <div class="board-header-smiley cell-border-2" onclick="onInit()"></div>
+                <div class="board-header-cell cell-border-2">
+                    <span class="time header-highlight"></span>
+                </div>
+            </div>
             <table><tbody></tbody></table>
         </div>
         <footer>Developed by: Omri Barouch</footer>
