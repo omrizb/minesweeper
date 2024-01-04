@@ -8,27 +8,38 @@
 </head>
 <body onload="onInit('Beginner')">
     <div class="container">
-        <h1><img src="./img/mine.png" class="header-image">Minesweeper</h1>
+        <h1>Minesweeper</h1>
         <div class="header">
-            <div>
-                <span class="left">Level: <span class="levels"></span></span>
-            </div>
+            <div class="levels"></div>
         </div>
-        <div class="board-container cell-border-1">
-            <div class="board-header">
-                <div>
+        <div class="board-container">
+            <div class="main-panel cell-border-1">
+                <div class="board-header">
+                    <div>
+                        <div class="board-header-cell cell-border-2">
+                            <span class="mines-left header-highlight"></span>
+                        </div>
+                        <div class="lives"></div>
+                    </div>        
+                    <div class="board-header-smiley cell-border-2" onclick="onInit()"></div>
                     <div class="board-header-cell cell-border-2">
-                        <span class="mines-left header-highlight"></span>
+                        <span class="time header-highlight"></span>
                     </div>
-                    <div class="lives"></div>
-                </div>        
-                <div class="board-header-smiley cell-border-2" onclick="onInit()"></div>
-                <div class="board-header-cell cell-border-2">
-                    <span class="time header-highlight"></span>
                 </div>
+                <table><tbody></tbody></table>
             </div>
-            <table><tbody></tbody></table>
+            <div class="right-panel cell-border-1">
+                <div><button class="hint-btn cell-border-3 dynamic-state" onclick="onHintClick()">H💡nt</button></div>
+                <div class="hint-amount hints-left"></div>
+                <div><button class="hint-btn cell-border-3 dynamic-state" onclick="onSafeClickClick()">Safe Click</button></div>
+                <div class="hint-amount safe-clicks-left"></div>
+                <div><button class="hint-btn cell-border-3 dynamic-state" onclick="onMegaHintClick()">🔥Mega🔥</button></div>
+                <div class="hint-amount mega-hints-left"></div>
+                <div><button class="hint-btn cell-border-3 dynamic-state" onclick="onExterminateClick()">3x💣=💥</button></div>
+                <div class="hint-amount exterminates-left"></div>
+            </div>
         </div>
+        
         <footer>Developed by: Omri Barouch</footer>
     </div>
     
